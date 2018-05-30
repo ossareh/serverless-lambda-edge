@@ -47,6 +47,10 @@ class Plugin {
 			}
 		});
 
+		if (!assumeRoleUpdated) {
+			this.serverless.cli.log('WARNING: was unable to update the Lambda assume role policy to allow Lambda@Edge to assume the role');
+		}
+
 		// Serverless creates a LogGroup by a specific name, and grants logs:CreateLogStream
 		// and logs:PutLogEvents permissions to the function. However, on a replicated
 		// function, AWS will name the log groups differently, so the Serverless-created
@@ -67,9 +71,6 @@ class Plugin {
 			Resource: 'arn:aws:logs:*:*:*',
 		});
 
-		if (!assumeRoleUpdated) {
-			this.serverless.cli.log('WARNING: was unable to update the Lambda assume role policy to allow Lambda@Edge to assume the role');
-		}
 	}
 
 	modifyLambdaFunctionsAndDistributions(functions, template) {
