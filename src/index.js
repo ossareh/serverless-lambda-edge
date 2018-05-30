@@ -70,7 +70,6 @@ class Plugin {
 			],
 			Resource: 'arn:aws:logs:*:*:*',
 		});
-
 	}
 
 	modifyLambdaFunctionsAndDistributions(functions, template) {
