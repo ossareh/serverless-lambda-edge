@@ -89,12 +89,14 @@ module.exports = Class.extend({
       var fnLogicalName = this._provider.naming.getLambdaLogicalId(fnName),
           pathPattern = lambdaAtEdge.pathPattern,
           outputName = this._provider.naming.getLambdaVersionOutputLogicalId(fnName),
+          distId = lambdaAtEdge.distributionId,
           distName = lambdaAtEdge.distribution,
           fnProps = template.Resources[fnLogicalName].Properties,
           evtType = lambdaAtEdge.eventType,
           output = template.Outputs[outputName],
           dist = template.Resources[distName],
           distConfig, cacheBehavior, fnAssociations, versionLogicalID;
+
 
       if (!_.contains(VALID_EVENT_TYPES, evtType)) {
          throw new Error('"' + evtType + '" is not a valid event type, must be one of: ' + VALID_EVENT_TYPES.join(', '));

@@ -1,5 +1,7 @@
 {
-
-   "extends": "eslint-config-silvermine/node"
-
+	"extends": "airbnb",
+	"rules": {
+		"indent": ["error", "tab"],
+		"no-tabs": 0
+	}
 }

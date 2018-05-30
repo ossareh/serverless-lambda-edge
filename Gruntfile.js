@@ -1,28 +1,34 @@
-'use strict';
+module.exports = function (grunt) {
+	const config = {
+		js: {
+			all: [
+				'Gruntfile.js',
+				'src/**/*.js',
+				'!**/node_modules/**/*',
+			],
+		},
+	};
 
-module.exports = function(grunt) {
+	grunt.initConfig({
+		pkg: grunt.file.readJSON('package.json'),
 
-   var config;
+		eslint: {
+			target: config.js.all,
+		},
 
-   config = {
-      js: {
-         all: [ 'Gruntfile.js', 'src/**/*.js', '!**/node_modules/**/*' ],
-      },
-   };
+		// TODO: add auto running tests when there are meaningful tests to run
+		watch: {
+			js: {
+				files: config.js.all,
+				tasks: ['eslint'],
+			},
+		},
 
-   grunt.initConfig({
+	});
 
-      pkg: grunt.file.readJSON('package.json'),
+	grunt.loadNpmTasks('grunt-eslint');
+	grunt.loadNpmTasks('grunt-contrib-watch');
 
-      eslint: {
-         target: config.js.all,
-      },
-
-   });
-
-   grunt.loadNpmTasks('grunt-eslint');
-
-   grunt.registerTask('standards', [ 'eslint' ]);
-   grunt.registerTask('default', [ 'standards' ]);
-
+	grunt.registerTask('standards', ['eslint']);
+	grunt.registerTask('default', ['standards']);
 };
