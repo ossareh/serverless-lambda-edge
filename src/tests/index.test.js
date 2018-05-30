@@ -1,6 +1,6 @@
 import { noop } from 'underscore';
 import expect from 'expect.js';
-import { Plugin } from '../index';
+import Plugin from '../index';
 
 function stubServerless() {
 	return {

@@ -2,6 +2,7 @@
 	"extends": "airbnb",
 	"rules": {
 		"indent": ["error", "tab"],
-		"no-tabs": 0
+		"no-tabs": 0,
+		"max-len": 0
 	}
 }
