@@ -1,4 +1,6 @@
-import _ from 'underscore';
+'use strict';
+
+const _ = require('underscore');
 
 const VALID_EVENT_TYPES = [
 	'viewer-request',
@@ -18,7 +20,7 @@ class Plugin {
 		}
 
 		this.hooks = {
-			'aws:package:finalize:mergeCustomProviderResources': this.modifyTemplate.bind(this),
+			'after:aws:package:finalize:mergeCustomProviderResources': this.modifyTemplate.bind(this),
 		};
 	}
 
@@ -26,7 +28,7 @@ class Plugin {
 		const template = this.serverless.service.provider.compiledCloudFormationTemplate;
 
 		this.modifyExecutionRole(template);
-		this.modifyLambdaFunctionsAndDistributions(this.serverless.service.functions, template);
+		this.modifyLambdaFunctions(this.serverless.service.functions, template);
 	}
 
 	modifyExecutionRole(template) {
@@ -72,97 +74,65 @@ class Plugin {
 		});
 	}
 
-	modifyLambdaFunctionsAndDistributions(functions, template) {
+	modifyLambdaFunctions(functions, template) {
 		_.chain(functions)
 			.pick(_.property('lambdaAtEdge')) // `pick` is used like `filter`, but for objects
 			.each((fnDef, fnName) => {
 				const { lambdaAtEdge } = fnDef;
 
 				if (_.isArray(lambdaAtEdge)) {
-					_.each(lambdaAtEdge, this.handleSingleFunctionAssociation.bind(this, template, fnDef, fnName));
+					_.each(lambdaAtEdge, this.handleFunctionChanges.bind(this, template, fnName));
 				} else {
-					this.handleSingleFunctionAssociation(template, fnDef, fnName, lambdaAtEdge);
+					this.handleFunctionChanges(template, fnName, lambdaAtEdge);
 				}
 			});
 	}
 
-	handleSingleFunctionAssociation(template, fnDef, fnName, lambdaAtEdge) {
-		const { distribution, pathPattern } = lambdaAtEdge;
+	handleFunctionChanges(template, fnName, lambdaAtEdge) {
+		const { eventType } = lambdaAtEdge;
+
+		if (!_.contains(VALID_EVENT_TYPES, eventType)) {
+			throw new Error(`"${eventType}" is not a valid event type, must be one of: ${VALID_EVENT_TYPES.join(', ')}`);
+		}
 
 		const fnLogicalName = this.provider.naming.getLambdaLogicalId(fnName);
 		const outputName = this.provider.naming.getLambdaVersionOutputLogicalId(fnName);
 
 		const fnProps = template.Resources[fnLogicalName].Properties;
-		const evtType = lambdaAtEdge.eventType;
-		const output = template.Outputs[outputName];
-		const dist = template.Resources[distribution];
+		const outputs = template.Outputs;
 
-		let distConfig = null;
-		let cacheBehavior = null;
-		let fnAssociations = null;
-		let versionLogicalID = null;
+		outputs[`${fnLogicalName}EventType`] = {
+			Description: 'The event type for this function',
+			Value: eventType,
+			Export: {
+				Name: `${fnLogicalName}:${this.provider.getStage()}-EventType`,
+			},
+		};
 
+		const output = outputs[outputName];
 
-		if (!_.contains(VALID_EVENT_TYPES, evtType)) {
-			throw new Error(`"${evtType}" is not a valid event type, must be one of: ${VALID_EVENT_TYPES.join(', ')}`);
+		if (!output) {
+			throw new Error(`Could not find output by name of: ${outputName}`);
 		}
 
-		if (!dist) {
-			throw new Error(`Could not find resource with logical name ${distribution}`);
-		}
-
-		if (dist.Type !== 'AWS::CloudFront::Distribution') {
-			throw new Error(`Resource with logical name ${distribution} is not type AWS::CloudFront::Distribution`);
-		}
-
-		versionLogicalID = (output ? output.Value.Ref : null);
-
-		if (!versionLogicalID) {
-			throw new Error(`Could not find output by name of ${outputName} or value from it to use version ARN`);
-		}
+		output.Export = {
+			Name: `${fnLogicalName}:${this.provider.getStage()}-ARN`,
+		};
 
 		if (fnProps && fnProps.Environment && fnProps.Environment.Variables) {
 			const numEnvVars = _.size(fnProps.Environment.Variables);
-			this.serverless.cli.log(`Removing ${numEnvVars} environment variables from function ${fnLogicalName} because Lambda@Edge does not support environment variables`);
-
-			delete fnProps.Environment.Variables;
-
-			if (_.isEmpty(fnProps.Environment)) {
-				delete fnProps.Environment;
+			if (numEnvVars > 0) {
+				this.serverless.cli.log(`Removing ${numEnvVars} environment variables from function ${fnLogicalName} because Lambda@Edge does not support environment variables`);
+				delete fnProps.Environment.Variables;
+				if (_.isEmpty(fnProps.Environment)) {
+					delete fnProps.Environment;
+				}
 			}
 		}
 
-		distConfig = dist.Properties.DistributionConfig;
-
-		if (pathPattern) {
-			cacheBehavior = _.findWhere(distConfig.CacheBehaviors, { PathPattern: pathPattern });
-
-			if (!cacheBehavior) {
-				throw new Error(`Could not find cache behavior in ${distribution} with path pattern ${pathPattern}`);
-			}
-		} else {
-			cacheBehavior = distConfig.DefaultCacheBehavior;
-		}
-
-		fnAssociations = cacheBehavior.LambdaFunctionAssociations;
-
-		if (!_.isArray(fnAssociations)) {
-			fnAssociations = [];
-			cacheBehavior.LambdaFunctionAssociations = [];
-		}
-
-		fnAssociations.push({
-			EventType: evtType,
-			LambdaFunctionARN: { Ref: versionLogicalID },
-		});
-
-		const confirmationLog = `Added "${evtType}" Lambda@Edge association for version "${versionLogicalID}" to distribution "${distribution}"`;
-		if (pathPattern) {
-			this.serverless.cli.log(`${confirmationLog} (path pattern: "${pathPattern}")`);
-		} else {
-			this.serverless.cli.log(`${confirmationLog}`);
-		}
+		this.serverless.cli.log(`Added "${eventType}" Lambda@Edge association for version: ${output.Value}`);
+		this.serverless.cli.log(`Reminder: if you reference this ARN anywhere you need to reference the new value now: ${output.Value}`);
 	}
 }
 
-export default Plugin;
+module.exports = Plugin;

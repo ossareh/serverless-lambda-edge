@@ -1,43 +1,46 @@
 {
-  "name": "serverless-plugin-cloudfront-lambda-edge",
-  "version": "1.0.0",
-  "description": "A fork of silbermine/serverless-plugin-cloudfront-lambda-edge; a plugin for serverkess to to provide support for Lambda@Edge",
-  "main": "src/index.js",
-  "scripts": {
-    "test": "./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha -- -R spec 'src/tests/**/*.test.js'"
-  },
-  "author": "Jeremy Thomerson",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/silvermine/serverless-plugin-cloudfront-lambda-edge.git"
-  },
-  "keywords": [
-    "serverless plugin cloudfront lambda edge",
-    "serverless",
-    "cloudfront",
-    "lambda@edge"
-  ],
-  "bugs": {
-    "url": "https://github.com/ossareh/serverless-plugin-cloudfront-lambda-edge/issues"
-  },
-  "homepage": "https://github.com/ossareh/serverless-plugin-cloudfront-lambda-edge#readme",
-  "dependencies": {
-    "underscore": "1.9.0"
-  },
-  "devDependencies": {
-    "coveralls": "3.0.1",
-    "eslint": "4.19.1",
-    "eslint-config-airbnb": "^16.1.0",
-    "eslint-plugin-import": "^2.12.0",
-    "eslint-plugin-jsx-a11y": "^6.0.3",
-    "eslint-plugin-react": "^7.8.2",
-    "expect.js": "0.3.1",
-    "grunt": "1.0.2",
-    "grunt-contrib-watch": "^1.1.0",
-    "grunt-eslint": "20.1.0",
-    "istanbul": "0.4.5",
-    "mocha": "5.2.0",
-    "mocha-lcov-reporter": "1.3.0"
-  }
+	"name": "serverless-lambda-edge",
+	"version": "1.5.0",
+	"description": "A fork of silbermine/serverless-plugin-cloudfront-lambda-edge; a plugin for serverless to to provide support for Lambda@Edge",
+	"main": "src/index.js",
+	"scripts": {
+		"test": "./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha -- -R spec 'src/tests/**/*.test.js'"
+	},
+	"author": "P. Michael Ossareh",
+	"contributors": [
+		"Jeremy Thomerson"
+	],
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/ossareh/serverless-lambda-edge.git"
+	},
+	"keywords": [
+		"serverless plugin cloudfront lambda edge",
+		"serverless",
+		"cloudfront",
+		"lambda@edge"
+	],
+	"bugs": {
+		"url": "https://github.com/ossareh/serverless-lambda-edge/issues"
+	},
+	"homepage": "https://github.com/ossareh/serverless-lambda-edge#readme",
+	"dependencies": {
+		"underscore": "1.9.0"
+	},
+	"devDependencies": {
+		"coveralls": "3.0.1",
+		"eslint": "4.19.1",
+		"eslint-config-airbnb": "^16.1.0",
+		"eslint-plugin-import": "^2.12.0",
+		"eslint-plugin-jsx-a11y": "^6.0.3",
+		"eslint-plugin-react": "^7.8.2",
+		"expect.js": "0.3.1",
+		"grunt": "1.0.2",
+		"grunt-contrib-watch": "^1.1.0",
+		"grunt-eslint": "20.1.0",
+		"istanbul": "0.4.5",
+		"mocha": "5.2.0",
+		"mocha-lcov-reporter": "1.3.0"
+	}
 }
